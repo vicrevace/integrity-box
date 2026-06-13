@@ -91,17 +91,17 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--glow-color) 0%, transparent 60%);
   opacity: 0.2;
   pointer-events: none;
   filter: blur(12px);
-  animation: dashboardGlow 4s ease-in-out infinite;
+  animation: dashboardGlow 3s ease-in-out infinite;
   z-index: 0;
 }
 
 @keyframes dashboardGlow {
   0%, 100% { opacity: 0.2; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(1.1); }
+  40% { opacity: 0.4; transform: scale(1.1); }
 }
 
 /* Status Indicators */
@@ -194,7 +194,7 @@ body {
 .status-indicator.gulambi { background: rgba(255,20,147,0.25); color: #FF2F92; }
 .status-indicator.grey { background: rgba(203,213,225,0.25); color: #CBD5E1; }
 .status-indicator.teal { background: rgba(45,212,191,0.25); color: #2DD4BF; }
-.status-indicator.aqua { background: rgba(0,200,255,0.25); color: #5BB5FF; }
+.status-indicator.aqua { background: rgba(0,200,255,0.25); color: #43CDF9; }
 
 /* Buttons */
 .button-grid {
@@ -252,7 +252,7 @@ body {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: radial-gradient(circle at 50% 50%, var(--glow-color) 0%, transparent 70%);
+  background: radial-gradient(circle at 50% 50%, var(--glow-color) 0%, transparent 80%);
   filter: blur(8px);
   opacity: 0.25;
   transform: scale(1.05);
@@ -406,7 +406,7 @@ body {
   font-weight: 600;
   color: var(--fg);
   margin: 0;
-  animation: titleGlow 2s ease-in-out infinite;
+  animation: titleGlow 4s ease-in-out infinite;
 }
 
 @keyframes titleGlow {
