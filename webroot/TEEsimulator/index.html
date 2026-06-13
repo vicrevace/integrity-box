@@ -20,7 +20,7 @@
   --btn-hover:#2d3240F2;
   --shadow:#00000066;
 
-  --col-aosp:#ffb347;
+  --col-keybox2:#ffb347;
   --col-private:#d28bff;
 
   --radius:16px;
@@ -46,29 +46,48 @@ html,body{
   box-shadow:0 0 24px rgba(0,153,255,0.12);
 }
 
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:14px;
+/* Title section */
+.title-section{
+  text-align:center;
+  margin-bottom:20px;
 }
 
 .title{
-  font-size:20px;
+  font-size:22px;
   font-weight:700;
   color:var(--accent);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
 }
 
 .note{
   font-size:13px;
   color:var(--muted);
+  margin-top:4px;
 }
 
-.controls{
+/* Action rows - center aligned */
+.action-row{
   display:flex;
-  gap:8px;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
   flex-wrap:wrap;
-  margin-bottom:12px;
+}
+
+/* Search row */
+.search-row{
+  display:flex;
+  justify-content:center;
+  margin-bottom:20px;
+}
+
+.search-row input{
+  width:100%;
+  max-width:500px;
 }
 
 input,select,button{
@@ -107,7 +126,6 @@ button.danger{
 
 button.primary,
 button.danger{
-  width:80px;
   text-align:center;
 }
 
@@ -116,19 +134,40 @@ table{
   border-collapse:collapse;
 }
 
+th:first-child{
+  width:40px;
+}
+
 th,td{
   padding:10px;
   border-bottom:1px solid var(--card-border);
   text-align:left;
+  vertical-align:top;
 }
 
-.pkg{
+/* Stacked row layout */
+.app-row-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.app-row-top{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.app-row-top .app-icon{
+  margin-left:0;
+}
+.app-row-name{
   font-weight:700;
-  font-size:90%;
+  font-size:12.5px;
+  letter-spacing:-0.2px;
   cursor:pointer;
+  padding-left:48px;
 }
 
-.pkg-aosp{color:var(--col-aosp);}
+.pkg-keybox2{color:var(--col-keybox2);}
 .pkg-private{color:var(--col-private);}
 .pkg-default{color:var(--fg);}
 
@@ -155,7 +194,6 @@ th,td{
 }
 
 .modeSel{
-  margin-left:8px;
   padding:6px;
 }
 
@@ -177,17 +215,10 @@ th,td{
   vertical-align:middle;
 }
 
-.pkg-wrap{
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-
 .app-icon{
-  width:32px;
-  height:32px;
-  margin-left:0;
-  border-radius:8px;
+  width:38px;
+  height:38px;
+  border-radius:10px;
   object-fit:contain;
   background:#00000022;
   flex-shrink:0;
@@ -202,13 +233,13 @@ th,td{
   transition:opacity .25s ease;
 }
 
-td.pkg{
-  padding-left:1px;
+/* Increase row padding for better spacing */
+tbody tr{
+  padding:14px 0;
 }
 
-.pkg-text{
-  font-size:12.5px;
-  letter-spacing:-0.2px;
+tbody td{
+  padding:14px 10px;
 }
 
 </style>
@@ -217,23 +248,21 @@ td.pkg{
 <body>
 <div class="container">
 
-  <div class="header">
-    <div>
-      <div class="title"><span class="material-icons">vpn_key</span> Keybox Selector</div>
-      <div class="note">Powered by Integrity Box</div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button id="btnBackup" class="primary"><span class="material-icons">upload</span> Backup</button>
-      <button id="btnRestore" class="danger"><span class="material-icons">history</span> Restore</button>
-      <button id="btnSave" class="primary"><span class="material-icons">save</span> Save</button>
-    </div>
+  <div class="title-section">
+    <div class="title"><span class="material-icons">vpn_key</span> Key Simulator</div>
+    <div class="note">Powered by Integrity Box</div>
   </div>
 
-  <div class="controls">
-    <input id="filter" placeholder="Filter package…" style="flex:1">
+  <div class="action-row">
+    <button id="btnBackup" class="primary"><span class="material-icons">upload</span> Backup</button>
+    <button id="btnRestore" class="danger"><span class="material-icons">history</span> Restore</button>
+    <button id="btnSave" class="primary"><span class="material-icons">save</span> Save</button>
+  </div>
+
+  <div class="action-row">
     <select id="bulkKeybox">
       <option value="default">Default</option>
-      <option value="aosp">AOSP</option>
+      <option value="keybox2">Personal</option>
       <option value="private">Private</option>
     </select>
     <select id="bulkMode">
@@ -241,9 +270,15 @@ td.pkg{
       <option value="generate">GENERATE</option>
       <option value="leaf">LEAF</option>
     </select>
+  </div>
+
+  <div class="action-row">
     <button id="btnAddSelected" class="primary"><span class="material-icons">add</span> Add</button>
     <button id="btnRemoveSelected" class="danger"><span class="material-icons">remove</span> Remove</button>
-    <div id="previewButtons" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+  </div>
+
+  <div class="search-row">
+    <input id="filter" placeholder="Filter package…">
   </div>
 
   <table>
@@ -251,10 +286,9 @@ td.pkg{
       <tr>
         <th></th>
         <th id="pkgHeader" style="cursor:pointer;">Package (click to select all)</th>
-        <th>Keybox / Mode</th>
       </tr>
     </thead>
-    <tbody id="appsBody"><tr><td colspan="3">Loading…</td></tr></tbody>
+    <tbody id="appsBody"><tr><td colspan="2">Loading…</td></tr></tbody>
   </table>
 
   <button id="btnLoadMore" class="loadMore" style="display:none">
@@ -302,7 +336,7 @@ function esc(s){
 
 const TARGET="/data/adb/tricky_store/target.txt";
 const TARGET_BAK="/sdcard/tee_simulator_target.txt.bak";
-const KEY_AOSP="keybox2.xml";
+const KEY_KEYBOX2="keybox2.xml";
 const KEY_PRIVATE="keybox3.xml";
 const BLACKLIST_FILE = "/data/adb/Box-Brain/blacklist.txt";
 
@@ -350,22 +384,18 @@ function parsePm(out){
 
 async function fetchApps(){
   try{
-    // User-installed apps
     const userOut = await runShell("pm list packages -3 || true");
     const userApps = parsePm(userOut);
 
-    // Explicit system apps (Play Store + Play Services)
     const systemApps = [];
     for (const pkg of EXTRA_SYSTEM_APPS) {
       try {
         await runShell(`pm path ${pkg}`);
         systemApps.push({ pkg });
       } catch {
-        // ignore if package not present 
       }
     }
 
-    // Merge + dedupe
     const map = new Map();
     [...systemApps, ...userApps].forEach(a => map.set(a.pkg, a));
 
@@ -419,33 +449,32 @@ function createRow(app){
   tr.dataset.pkg=app.pkg;
 
   tr.innerHTML=`
-    <td></td> 
-    <td class="pkg pkg-default" data-pkg="${app.pkg}">
-      <div class="pkg-wrap">
-        <img
-          class="app-icon lazy"
-          data-src="ksu://icon/${app.pkg}"
-          alt=""
-        >
-        <span class="pkg-text">${app.pkg}</span>
-      </div>
-    </td>
+    <td></td>
     <td>
-      <div class="segment" data-pkg="${app.pkg}">
-        <button data-k="default"><span class="material-icons">apps</span></button>
-        <button data-k="aosp"><span class="material-icons">android</span></button>
-        <button data-k="private"><span class="material-icons">lock</span></button>
+      <div class="app-row-wrap">
+        <div class="app-row-top">
+          <img
+            class="app-icon lazy"
+            data-src="ksu://icon/${app.pkg}"
+            alt=""
+          >
+          <div class="segment" data-pkg="${app.pkg}">
+            <button data-k="default"><span class="material-icons">apps</span></button>
+            <button data-k="keybox2"><span class="material-icons">android</span></button>
+            <button data-k="private"><span class="material-icons">lock</span></button>
+          </div>
+          <select class="modeSel" data-pkg="${app.pkg}">
+            <option value="auto">AUTO</option>
+            <option value="generate">GENERATE</option>
+            <option value="leaf">LEAF</option>
+          </select>
+        </div>
+        <span class="app-row-name pkg-default" data-pkg="${app.pkg}">${app.pkg}</span>
       </div>
-
-      <select class="modeSel" data-pkg="${app.pkg}">
-        <option value="auto">AUTO</option>
-        <option value="generate">GENERATE</option>
-        <option value="leaf">LEAF</option>
-      </select>
     </td>
   `;
 
-  tr.querySelector(".pkg").onclick = () => toggleSelect(app.pkg);
+  tr.querySelector(".app-row-name").onclick = () => toggleSelect(app.pkg);
 
   return tr;
 }
@@ -503,21 +532,21 @@ function appendChunk(){
 btnLoadMore.onclick = appendChunk;
 
 function applyPkgColor(pkg){
-  const pkgCell = document.querySelector(`.pkg[data-pkg="${pkg}"]`);
+  const pkgCell = document.querySelector(`.app-row-name[data-pkg="${pkg}"]`);
   if(!pkgCell) return;
 
   const map=findMapping(pkg);
   if(!map){
-    pkgCell.className="pkg pkg-default";
+    pkgCell.className="app-row-name pkg-default";
     return;
   }
 
-  if(map.sec===KEY_AOSP){
-    pkgCell.className="pkg pkg-aosp";
+  if(map.sec===KEY_KEYBOX2){
+    pkgCell.className="app-row-name pkg-keybox2";
   } else if(map.sec===KEY_PRIVATE){
-    pkgCell.className="pkg pkg-private";
+    pkgCell.className="app-row-name pkg-private";
   } else {
-    pkgCell.className="pkg pkg-default";
+    pkgCell.className="app-row-name pkg-default";
   }
 }
 
@@ -537,7 +566,7 @@ function refreshRowBindings(){
     if(map){
       const secName = 
         map.sec==="__GLOBAL__" ? "default" :
-        map.sec===KEY_AOSP    ? "aosp" :
+        map.sec===KEY_KEYBOX2    ? "keybox2" :
         "private";
 
       btns.forEach(b => b.classList.toggle("active", b.dataset.k===secName));
@@ -556,7 +585,7 @@ function refreshRowBindings(){
 
         const sec =
           key==="default" ? "__GLOBAL__" :
-          key==="aosp"    ? KEY_AOSP :
+          key==="keybox2"    ? KEY_KEYBOX2 :
                             KEY_PRIVATE;
 
         const modeSel=document.querySelector(`.modeSel[data-pkg="${pkg}"]`);
@@ -582,7 +611,7 @@ function refreshRowBindings(){
 
       const sec =
         activeBtn.dataset.k==="default" ? "__GLOBAL__" :
-        activeBtn.dataset.k==="aosp"    ? KEY_AOSP :
+        activeBtn.dataset.k==="keybox2"    ? KEY_KEYBOX2 :
                                           KEY_PRIVATE;
 
       removePkgEverywhere(pkg);
@@ -610,7 +639,7 @@ document.getElementById("btnAddSelected").onclick = async () => {
 
   const sec =
     kb==="default" ? "__GLOBAL__" :
-    kb==="aosp"    ? KEY_AOSP :
+    kb==="keybox2"    ? KEY_KEYBOX2 :
                      KEY_PRIVATE;
 
   for(const pkg of sel){
@@ -657,7 +686,7 @@ function setupIconLazyLoading(){
         img.classList.add("loaded");
       };
       img.onerror = () => {
-        img.remove(); // clean fallback
+        img.remove();
       };
       obs.unobserve(img);
     });
@@ -674,8 +703,8 @@ async function persist(){
     out.push("");
   }
 
-  if(targetMap[KEY_AOSP]?.length){
-    out.push(`[${KEY_AOSP}]`, ...targetMap[KEY_AOSP], "");
+  if(targetMap[KEY_KEYBOX2]?.length){
+    out.push(`[${KEY_KEYBOX2}]`, ...targetMap[KEY_KEYBOX2], "");
   }
   if(targetMap[KEY_PRIVATE]?.length){
     out.push(`[${KEY_PRIVATE}]`, ...targetMap[KEY_PRIVATE], "");
@@ -722,7 +751,7 @@ document.getElementById("filter").oninput = () => {
 
 async function refresh(){
   selectedSet.clear();
-  appsBody.innerHTML = `<tr><td colspan="3">Loading…</td></tr>`;
+  appsBody.innerHTML = `<tr><td colspan="2">Loading…</td></tr>`;
 
   installedApps = await fetchApps();
 
