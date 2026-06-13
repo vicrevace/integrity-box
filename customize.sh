@@ -109,6 +109,12 @@ cleanup() {
     sh "$SCRIPT/cleanup.sh"
 }
 
+# Clean up old logs and files
+butter_chicken() {
+    chmod +x "$MODPATH/consent.sh"
+    sh "$MODPATH/consent.sh"
+}
+
 setup_keybox() {
   local BASE="$1"
   [ -z "$BASE" ] && return 0
@@ -134,7 +140,7 @@ setup_keybox() {
 # Create necessary directories if missing
 prepare_directories() {
     debug " ✦ Preparing Required Directories  "
-    [ ! -d "/data/adb/modules/playintegrity" ] && mkdir -p "/data/adb/modules/playintegrity"
+    [ ! -d "/data/adb/modules/playintegrityfix" ] && mkdir -p "/data/adb/modules/playintegrityfix"
     [ ! -f "$SRC" ] && return 1
 }
 
@@ -166,11 +172,6 @@ enable_recommended_settings() {
     touch "$FLAG/migrate_force"
     touch "$FLAG/run_migrate"
     touch "$FLAG/noredirect"
-    touch "$FLAG/nodebug"
-    touch "$FLAG/encrypt"
-    touch "$FLAG/build"
-    touch "$FLAG/twrp"
-    touch "$FLAG/tag"
 }
 
 # Final footer message
@@ -187,37 +188,35 @@ display_footer() {
 # Main installation flow
 install_module() {
     check_integrity
+    prepare_directories
+    handle_module_props
     setup_environment
     hizru
-    prepare_directories
     cleanup
     check_boot_hash
     setup_keybox "$MODPATH"
-    handle_module_props
-    release_source
     enable_recommended_settings
+    butter_chicken
+    release_source
 }
 
 echo "
-    ____      __                  _ __       
-   /  _/___  / /____  ____ ______(_) /___  __
-   / // __ \/ __/ _ \/ __ / ___/ / __/  / / /
- _/ // / / / /_/  __/ /_/ / /  / / /_/ /_/ / 
-/___/_/ /_/\__/\___/\__, /_/  /_/\__/\__, /  
-                   /____/           /____/           
-             ____            
-            / __ )____  _  __
-           / __  / __ \| |/_/
-          / /_/ / /_/ />  <  
-         /_____/\____/_/|_|  
-                    
+  ___     _                _ _        
+ |_ _|_ _| |_ ___ __ _ _ _(_) |_ _  _ 
+  | || ' \  _/ -_) _  | '_| |  _| || |
+ |___|_||_\__\___\__, |_| |_|\__|\_, |
+ | _ ) _____ __  |___/           |__/ 
+ | _ \/ _ \ \ /                       
+ |___/\___/_\_\                       
+                                                
+                                      
 "
 
 # Set fingerprint on installation 
-if [ -f "/data/adb/modules/playintegrityfix/custom.pif.prop" ]; then
-    cp "/data/adb/modules/playintegrityfix/custom.pif.prop" "$MODPATH/custom.pif.prop"
+if [ -f "/data/adb/modules/playintegrityfix/pixel.txt" ]; then
+    cp "/data/adb/modules/playintegrityfix/pixel.txt" "$MODPATH/pixel.txt"
 elif [ ! -f "/data/adb/modules/playintegrityfix/service.sh" ]; then
-    cp "$MODPATH/fingerprint/custom.pif.prop" "$MODPATH/custom.pif.prop"
+    cp "$MODPATH/fingerprint/pixel.txt" "$MODPATH/pixel.txt"
 fi
 
 # Quote of the day 
@@ -230,8 +229,24 @@ if [ -d /data/adb/modules/playintegrity ]; then
     touch "/data/adb/modules/playintegrity/remove"
 fi
 
+# Detect ROM
+if rom_type; then
+    debug " ✦ ROM type: CUSTOM ROM"
+else
+    touch "$FLAG/safemode"
+fi
+
+# Write security patch file if missing 
+if [ ! -f /data/adb/tricky_store/security_patch.txt ]; then
+cat <<EOF > /data/adb/tricky_store/security_patch.txt
+all=2026-06-01
+EOF
+fi
+
 # Start the installation process
 install_module
+
+#[ ! -f "$FLAG/consent" ] && butter_chicken
 
 debug " ✦ Setting IntegrityBox Profile"
 # Only set profile on fresh installation 
@@ -242,91 +257,6 @@ if [ ! -f "/data/adb/modules/playintegrityfix/service.sh" ]; then
         touch "$FLAG/legacy"
     fi
 fi
-
-# Detect ROM
-if rom_type; then
-    debug " ✦ ROM type: CUSTOM ROM"
-else
-    debug " ✦ ROM type: STOCK ROM"
-    touch "$FLAG/safemode"
-fi
-
-# Write security patch file if missing 
-if [ ! -f /data/adb/tricky_store/security_patch.txt ]; then
-cat <<EOF > /data/adb/tricky_store/security_patch.txt
-all=2026-05-01
-EOF
-fi
-
-# Let bro decide whether he wants to break his OTA or not 
-get_key() {
-    local key=""
-    local tmpfile=/tmp/.getevent_$$
-
-    # Start getevent in background
-    ( timeout $TIMEOUT getevent -lqc 1 2>/dev/null > "$tmpfile" ) &
-    local pid=$!
-
-    # Wait for process to complete or timeout
-    wait $pid 2>/dev/null
-
-    # Check what we got
-    if [ -f "$tmpfile" ]; then
-        local event=$(grep -E "KEY_(VOLUME|POWER)" "$tmpfile" | grep "DOWN" | awk '{print $(NF-1)}')
-        case "$event" in
-            *VOLUMEUP*) key="UP" ;;
-            *VOLUMEDOWN*) key="DOWN" ;;
-            *POWER*) key="POWER" ;;
-        esac
-        rm -f "$tmpfile"
-    fi
-
-    if [ -z "$key" ]; then
-        key="TIMEOUT"
-        # Kill any leftover getevent
-        killall -9 getevent 2>/dev/null
-    fi
-
-    echo "$key"
-}
-
-detect_lineage_official() {
-    if [ -n "$(getprop ro.lineage.device)" ]; then
-        echo "   "
-        echo "   LineageOS detected!"
-        echo "   "
-        echo "   𝙎𝙥𝙤𝙤𝙛 𝙘𝙪𝙨𝙩𝙤𝙢 𝙍𝙊𝙈 𝙙𝙚𝙩𝙚𝙘𝙩𝙞𝙤𝙣 𝙥𝙧𝙤𝙥𝙨?"
-        echo "   {𝗧𝗵𝗶𝘀 𝘄𝗶𝗹𝗹 𝗯𝗿𝗲𝗮𝗸 𝗟𝗶𝗻𝗲𝗮𝗴𝗲𝗢𝗦 𝗢𝗧𝗔 𝘂𝗽𝗱𝗮𝘁𝗲𝗿}"
-        echo "   "
-        echo "   Volume UP / Touch  = YES (spoof props) [default]"
-        echo "   Volume DOWN = NO (keep ROM OTA working)"
-        echo "   Timeout: ${TIMEOUT}s"
-        echo "   "
-
-        local key=$(get_key)
-
-        case "$key" in
-            DOWN)
-                echo "   Keeping OTA updater intact."
-                rm -f "/data/adb/modules/playintegrityfix/system.prop"
-                rm -f "$FLAG/NoLineageProp"
-                rm -rf "$FLAG/override"
-                rm -rf "$FLAG/ota"
-                touch "$FLAG/safemode"
-                touch "$FLAG/lineageuser"
-                ;;
-            *)
-                echo "   Spoofing props enabled. OTA updater disabled."
-                rm -f "$FLAG/safemode"
-                rm -f "$FLAG/ota"
-                touch "$FLAG/override"
-                touch "$FLAG/NoLineageProp"
-                ;;
-        esac
-    fi
-}
-
-[ ! -f "$FLAG/lineageuser" ] && detect_lineage_official
 
 ##########################################
 # adapted from Play Integrity Fork by @osm0sis
