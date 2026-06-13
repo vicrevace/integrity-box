@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Device Spoofer</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+:root {
+--bg: #0d0f17;
+--fg: #e8eaf6;
+--accent: #1592FF;
+--accent-sec: #0066CC;
+--panel-bg: rgba(20, 23, 38, 0.8);
+--btn-hover: rgba(30, 35, 55, 0.9);
+--border-color: rgba(255, 255, 255, 0.08);
+--card-bg: rgba(25, 29, 45, 0.6);
+--card-border: rgba(255, 255, 255, 0.05);
+--shadow-color: rgba(0, 0, 0, 0.4);
+--transition-speed: 0.3s;
+--border-radius: 20px;
+--glow-color: #1592FF;
+--danger: #ff4757;
+--warning: #ffa502;
+}
+
+* {
+box-sizing: border-box;
+}
+
+body {
+margin: 0;
+padding: 2rem 0;
+background: 
+  radial-gradient(ellipse at 20% 80%, rgba(21, 146, 255, 0.15) 0%, transparent 50%),
+  radial-gradient(ellipse at 80% 20%, rgba(0, 102, 204, 0.15) 0%, transparent 50%),
+  linear-gradient(135deg, #0d0f17 0%, #151928 100%);
+color: var(--fg);
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+overflow-x: hidden;
+min-height: 100vh;
+}
+
+.container {
+max-width: 900px;
+margin: 0 auto;
+padding: 1rem;
+display: flex;
+flex-direction: column;
+gap: 2rem;
+}
+
+.header .title {
+font-size: 2.2rem;
+font-weight: 800;
+display: flex;
+align-items: center;
+flex-direction: column;
+gap: 4px;
+margin-bottom: 0.5rem;
+background: linear-gradient(135deg, var(--accent) 0%, #4da6ff 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+letter-spacing: -0.5px;
+}
+
+.header .title .material-icons {
+font-size: 2.4rem;
+background: linear-gradient(135deg, var(--accent) 0%, #4da6ff 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.header .subtitle {
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(21, 146, 255, 0.75);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  margin-bottom: 0.5rem;
+}
+
+.card {
+background: var(--card-bg);
+backdrop-filter: blur(20px);
+padding: 20px;
+border-radius: var(--border-radius);
+border: 1px solid var(--card-border);
+box-shadow: 
+  0 8px 32px var(--shadow-color),
+  inset 0 1px 0 rgba(255, 255, 255, 0.05);
+display: flex;
+flex-direction: column;
+gap: 16px;
+position: relative;
+overflow: hidden;
+}
+
+.card::before {
+content: "";
+position: absolute;
+inset: 0;
+background: 
+  radial-gradient(circle at 50% 0%, rgba(21, 146, 255, 0.1) 0%, transparent 50%),
+  radial-gradient(circle at 100% 100%, rgba(0, 102, 204, 0.08) 0%, transparent 40%);
+pointer-events: none;
+}
+
+.search {
+padding: 14px 20px;
+border-radius: 14px;
+border: 1px solid var(--border-color);
+background: rgba(0, 0, 0, 0.3);
+color: var(--fg);
+font-size: 0.95rem;
+transition: all 0.3s ease;
+position: relative;
+}
+
+.search:focus {
+outline: none;
+border-color: var(--accent);
+box-shadow: 0 0 0 3px rgba(21, 146, 255, 0.1), 0 0 20px rgba(21, 146, 255, 0.2);
+background: rgba(0, 0, 0, 0.4);
+}
+
+.search::placeholder {
+color: rgba(232, 234, 246, 0.4);
+}
+
+.list {
+display: flex;
+flex-direction: column;
+gap: 10px;
+max-height: 75vh;
+overflow-y: auto;
+padding-right: 4px;
+}
+
+.item {
+display: flex;
+align-items: center;
+gap: 16px;
+padding: 14px;
+border-radius: 16px;
+background: rgba(255, 255, 255, 0.03);
+border: 1px solid var(--card-border);
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+position: relative;
+}
+
+.item:hover {
+transform: translateY(-2px) scale(1.01);
+background: rgba(255, 255, 255, 0.06);
+box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+border-color: rgba(21, 146, 255, 0.15);
+}
+
+.info {
+display: flex;
+flex-direction: column;
+min-width: 0;
+flex: 1;
+}
+
+.name {
+font-weight: 600;
+font-size: 0.9rem;
+white-space: nowrap;
+text-overflow: ellipsis;
+overflow: hidden;
+color: var(--fg);
+transition: color 0.3s ease;
+}
+
+.actions {
+margin-left: auto;
+display: flex;
+gap: 12px;
+align-items: center;
+}
+
+.toggle {
+width: 52px;
+height: 28px;
+border-radius: 999px;
+background: rgba(255, 255, 255, 0.1);
+position: relative;
+cursor: pointer;
+transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.toggle::before {
+content: "";
+position: absolute;
+left: 4px;
+top: 4px;
+width: 20px;
+height: 20px;
+border-radius: 50%;
+background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.toggle.active {
+background: linear-gradient(135deg, var(--accent) 0%, var(--accent-sec) 100%);
+box-shadow: 0 0 20px rgba(21, 146, 255, 0.4);
+}
+
+.toggle.active::before {
+transform: translateX(24px) scale(1.05);
+}
+
+#snack {
+position: fixed;
+left: 50%;
+bottom: 100px;
+transform: translateX(-50%) translateY(20px);
+background: rgba(20, 23, 38, 0.95);
+color: #fff;
+padding: 16px 28px;
+border-radius: 16px;
+border: 1px solid rgba(21, 146, 255, 0.3);
+box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(21, 146, 255, 0.1);
+opacity: 0;
+pointer-events: none;
+transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+z-index: 9999;
+backdrop-filter: blur(10px);
+font-weight: 500;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+#snack.show {
+opacity: 1;
+pointer-events: auto;
+transform: translateX(-50%) translateY(0);
+}
+
+#snack::before {
+content: "check_circle";
+font-family: "Material Icons";
+color: var(--accent);
+font-size: 20px;
+}
+
+#snack.error::before {
+content: "error";
+color: var(--danger);
+}
+
+#snack.error {
+border-color: rgba(255, 71, 87, 0.3);
+box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 71, 87, 0.1);
+}
+
+.list::-webkit-scrollbar {
+width: 6px;
+}
+
+.list::-webkit-scrollbar-track {
+background: transparent;
+}
+
+.list::-webkit-scrollbar-thumb {
+background: linear-gradient(180deg, var(--accent) 0%, var(--accent-sec) 100%);
+border-radius: 3px;
+}
+
+.app-icon {
+width: 44px;
+height: 44px;
+border-radius: 12px;
+background: rgba(0, 0, 0, 0.3);
+object-fit: contain;
+flex-shrink: 0;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+transition: transform 0.3s ease;
+}
+
+.item:hover .app-icon {
+transform: scale(1.05);
+}
+
+.app-icon.lazy {
+opacity: 0;
+transform: scale(0.8);
+}
+
+.app-icon.loaded {
+opacity: 1;
+transform: scale(1);
+transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: rgba(21, 146, 255, 0.85);
+}
+
+.spoofapps-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 18px 20px;
+border-radius: 16px;
+background: rgba(255, 255, 255, 0.03);
+border: 1px solid var(--card-border);
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+cursor: pointer;
+}
+
+.spoofapps-row:hover {
+transform: translateY(-2px);
+background: rgba(255, 255, 255, 0.06);
+box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+border-color: rgba(21, 146, 255, 0.15);
+}
+
+.spoofapps-row .info {
+flex: 1;
+}
+
+.spoofapps-row .label {
+font-weight: 700;
+font-size: 1rem;
+color: var(--fg);
+margin-bottom: 4px;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.spoofapps-row .label .material-icons {
+font-size: 1.3rem;
+color: var(--accent);
+}
+
+.spoofapps-row .desc {
+font-size: 0.85rem;
+color: rgba(232, 234, 246, 0.6);
+}
+
+.warning-banner {
+display: none;
+align-items: center;
+gap: 12px;
+padding: 16px 20px;
+border-radius: 16px;
+background: linear-gradient(135deg, rgba(255, 71, 87, 0.12), rgba(255, 165, 2, 0.06));
+border: 1px solid rgba(255, 71, 87, 0.2);
+color: #ffb3b3;
+font-weight: 600;
+font-size: 0.95rem;
+animation: shake 0.5s ease;
+}
+
+.warning-banner.show {
+display: flex;
+}
+
+.warning-banner .material-icons {
+font-size: 22px;
+color: var(--danger);
+}
+
+@keyframes shake {
+0%, 100% { transform: translateX(0); }
+25% { transform: translateX(-5px); }
+75% { transform: translateX(5px); }
+}
+
+.locked-overlay {
+display: none;
+position: absolute;
+inset: 0;
+background: rgba(13, 15, 23, 0.85);
+backdrop-filter: blur(8px);
+border-radius: var(--border-radius);
+z-index: 10;
+align-items: center;
+justify-content: center;
+flex-direction: column;
+gap: 12px;
+text-align: center;
+padding: 20px;
+}
+
+.locked-overlay.show {
+display: flex;
+}
+
+.locked-overlay .material-icons {
+font-size: 48px;
+color: var(--danger);
+opacity: 0.8;
+}
+
+.locked-overlay .locked-text {
+font-size: 1.1rem;
+font-weight: 700;
+color: var(--fg);
+}
+
+.locked-overlay .locked-sub {
+font-size: 0.85rem;
+color: rgba(232, 234, 246, 0.5);
+}
+
+@media (max-width: 600px) {
+.container { padding: 0.8rem; }
+.header .title { font-size: 1.8rem; }
+.card { padding: 16px; }
+.item { padding: 12px; gap: 12px; }
+.app-icon { width: 40px; height: 40px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="title"><span class="material-icons">android</span>Device Spoofer</div>
+    <div class="subtitle">Powered by Integrity Box</div>
+  </div>
+
+  <div class="card" id="mainCard">
+    <div class="warning-banner" id="warningBanner">
+      <span class="material-icons">error_outline</span>
+      <span id="warningText">This feature depends on Zygisk to function properly. You’re currently running in Zygisk-less mode, which means this feature isn’t available. To use it, you’ll need to disable zygiskless mode, flash integrity box and reboot your device</span>
+    </div>
+
+    <div class="spoofapps-row" id="spoofAppsRow" onclick="toggleSpoofApps()">
+      <div class="info">
+        <div class="label"><span class="material-icons">dynamic_form</span>Spoof Apps</div>
+        <div class="desc">
+          Enable per-app pixel spoofing for selected apps.
+          <br>
+          <span class="hint">Note: Clear data of target app to Apply/Reset</span>
+        </div>
+      </div>
+      <div class="toggle" id="spoofAppsToggle"></div>
+    </div>
+
+    <input id="search" class="search" placeholder="Filter packages or labels..." />
+    <div class="list" id="list"></div>
+
+    <div class="locked-overlay" id="lockedOverlay">
+      <span class="material-icons">lock</span>
+      <div class="locked-text">UI Locked</div>
+      <div class="locked-sub">This feature depends on Zygisk to function properly. You’re currently running in Zygisk-less mode, which means this feature isn’t available. To use it, you’ll need to enable and run Zygisk</div>
+    </div>
+  </div>
+</div>
+
+<div id="snack"><span id="snackText"></span></div>
+
+<script>
+const TARGET_FILE="/data/adb/modules/playintegrityfix/apps.txt";
+const PROP_FILE="/data/adb/modules/playintegrityfix/pixel.txt";
+const ZYGISK_PATH="/data/adb/modules/playintegrityfix/zygisk";
+
+function runShell(cmd, cb){
+if(window.parent?.runShell){
+  window.parent.runShell(cmd).then(out=>cb?.(0,out,"")).catch(err=>cb?.(1,"",err));
+} else if(window.ksu?.exec){
+  const id="cb_"+Date.now()+"_"+Math.floor(Math.random()*9999);
+  window[id]=(code,stdout,stderr)=>{ try{ delete window[id] }catch(e){}; cb?.(code,stdout||"",stderr||""); };
+  ksu.exec(cmd,"{}",id);
+} else cb?.(1,"","ksu/runShell not found");
+}
+
+function esc(s){return "'"+String(s).replace(/'/g,"'\''")+"'";}
+function popup(msg, type="info") {
+ try {
+   if (typeof window.toast === "function") { window.toast(String(msg)); return; }
+   if (window.kernelsu && typeof window.kernelsu.toast === "function") { window.kernelsu.toast(String(msg)); return; }
+   if (typeof ksu === "object" && typeof ksu.toast === "function") { ksu.toast(String(msg)); return; }
+ } catch {}
+
+ const n = document.createElement("div");
+ n.className = "webui-popup";
+ n.textContent = msg;
+ const colors = { error:"#f44336", success:"#4caf50", info:"#1565c0", warn:"#ff8f00" };
+ const bg = colors[type] || "#0099FF";
+ Object.assign(n.style, {
+   position:"fixed",top:"-70px",left:"50%",transform:"translateX(-50%)",
+   background:bg,color:"#fff",padding:"0.8rem 1.2rem",borderRadius:"8px",
+   boxShadow:"0 6px 18px rgba(0,0,0,0.35)",fontWeight:"600",zIndex:"99999",
+   transition:"top 0.36s,opacity 0.36s",opacity:"0"
+ });
+ document.body.appendChild(n);
+ requestAnimationFrame(()=>{ n.style.top="20px"; n.style.opacity="1"; });
+ setTimeout(()=>{ n.style.top="-70px"; n.style.opacity="0"; setTimeout(()=>n.remove(),420); },2500);
+}
+
+function readLines(path, cb){
+runShell(`if [ -f ${esc(path)} ]; then cat ${esc(path)}; fi`, (c,o)=> cb((o||"").split("\n").map(l=>l.trim()).filter(l=>l)));
+}
+
+function writeLines(path, lines, cb){
+const args = lines.map(l=>esc(l)).join(" ");
+runShell(`mkdir -p $(dirname ${esc(path)}) && printf "%s\\n" ${args} > ${esc(path)}`, c=> cb?.(c===0));
+}
+
+async function readKey(file, key){
+return new Promise(resolve=>{
+  const cmd=`sh -c 'grep -m1 "^${key}=" "${file}" | cut -d"=" -f2- || echo ""'`;
+  runShell(cmd,(c,o)=>resolve((o||"").toString().trim()));
+});
+}
+
+async function writeKey(file, key, value){
+return new Promise(resolve=>{
+  const cmd=`sh -c 'if grep -q "^${key}=" "${file}"; then sed -i "s/^${key}=.*/${key}=${value}/" "${file}"; else printf "\\n${key}=${value}\\n" >> "${file}"; fi'`;
+  runShell(cmd,(c)=>resolve(c===0));
+});
+}
+
+async function checkZygisk(){
+return new Promise(resolve=>{
+  runShell(`sh -c 'if [ -d "${ZYGISK_PATH}" ]; then echo exists; else echo missing; fi'`,(c,o)=>resolve((o||"").trim()==="exists"));
+});
+}
+
+let cachedApps = [];
+let zygiskExists = false;
+let spoofAppsEnabled = false;
+
+function fetchInstalled(cb){
+runShell("pm list packages -3 -f", (c,out)=> {
+  if(!out) return cb([]);
+  const apps = out.trim().split("\n").map(l=>{
+    const m = l.match(/package:(.+)=(.+)$/);
+    return m ? {pkg:m[2],apk:m[1],label:m[2]} : null;
+  }).filter(Boolean);
+  cb(apps);
+});
+}
+
+function buildList(){
+readLines(TARGET_FILE, tLines=>{
+  const targets = tLines;
+  fetchInstalled(apps=>{
+    cachedApps = apps;
+    render(apps, targets);
+  });
+});
+}
+
+function render(apps, targets){
+const q=(document.getElementById("search").value||"").toLowerCase();
+const list=document.getElementById("list"); list.innerHTML="";
+apps.forEach((a, idx)=>{
+  if(q && !a.pkg.toLowerCase().includes(q) && !a.label.toLowerCase().includes(q)) return;
+  const isTarget = targets.includes(a.pkg);
+  const item = document.createElement("div");
+  item.className="item";
+  item.innerHTML = `
+    <img class="app-icon lazy" data-src="ksu://icon/${a.pkg}" alt="">
+    <div class="info">
+      <div class="name">${a.label}</div>
+    </div>
+    <div class="actions">
+      <div class="toggle ${isTarget?'active':''}" data-pkg="${a.pkg}"></div>
+    </div>
+  `;
+  list.appendChild(item);
+});
+attachListeners();
+loadIcons();
+}
+
+function attachListeners(){
+document.querySelectorAll(".toggle").forEach(btn=>{
+  if(btn.id==="spoofAppsToggle") return;
+  btn.onclick = ()=>{
+    const pkg=btn.getAttribute("data-pkg");
+    readLines(TARGET_FILE, lines=>{
+      let newTargets = [...lines];
+      if(btn.classList.contains("active")) newTargets=newTargets.filter(p=>p!==pkg);
+      else if(!newTargets.includes(pkg)) newTargets.push(pkg);
+      writeLines(TARGET_FILE, newTargets, ok=>{ 
+        popup(ok? (btn.classList.contains("active")?"Removed from targets":"Added to targets"):"Write failed", !ok); 
+        buildList(); 
+      });
+    });
+  };
+});
+}
+
+document.getElementById("search").addEventListener("input", buildList);
+
+function loadIcons(){
+const imgs = document.querySelectorAll("img.app-icon[data-src]");
+
+if (!("IntersectionObserver" in window)) {
+  imgs.forEach(img => {
+    img.src = img.dataset.src;
+    img.classList.add("loaded");
+  });
+  return;
+}
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const img = e.target;
+    img.src = img.dataset.src;
+    img.onload = () => {
+      img.classList.remove("lazy");
+      img.classList.add("loaded");
+    };
+    img.onerror = () => img.style.opacity = "0";
+    obs.unobserve(img);
+  });
+}, { rootMargin: "50px" });
+
+imgs.forEach(img => obs.observe(img));
+}
+
+async function toggleSpoofApps(){
+if(!zygiskExists) return;
+const newVal = spoofAppsEnabled ? "0" : "1";
+await writeKey(PROP_FILE, "spoofApps", newVal);
+spoofAppsEnabled = !spoofAppsEnabled;
+updateSpoofAppsVisuals();
+popup(spoofAppsEnabled ? "Spoof Apps enabled" : "Spoof Apps disabled");
+}
+
+function updateSpoofAppsVisuals(){
+const toggle = document.getElementById("spoofAppsToggle");
+toggle.classList.toggle("active", spoofAppsEnabled);
+}
+
+function lockUI(){
+document.getElementById("lockedOverlay").classList.add("show");
+document.getElementById("warningBanner").classList.add("show");
+document.getElementById("search").disabled = true;
+document.getElementById("spoofAppsRow").style.pointerEvents = "none";
+document.getElementById("spoofAppsRow").style.opacity = "0.4";
+}
+
+async function init(){
+zygiskExists = await checkZygisk();
+if(!zygiskExists){
+  lockUI();
+  return;
+}
+
+const val = await readKey(PROP_FILE, "spoofApps");
+spoofAppsEnabled = val === "1";
+updateSpoofAppsVisuals();
+
+runShell(`mkdir -p $(dirname ${esc(TARGET_FILE)}) && touch ${esc(TARGET_FILE)}`, ()=>buildList());
+}
+
+init();
+</script>
+</body>
+</html>
