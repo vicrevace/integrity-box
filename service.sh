@@ -3,17 +3,17 @@ MODPATH="${0%/*}"
 . $MODPATH/common_func.sh
 
 # Module path and file references
+PIF="/data/adb/modules/playintegrityfix"
 ROOT_SOL=$(detect_root_solution)
 SCRIPT="$MODPATH/webroot/common_scripts/autopilot.sh"
 LOG_DIR="/data/adb/Box-Brain/Integrity-Box-Logs"
-PROP="/data/adb/modules/playintegrityfix/system.prop"
+PROP="$PIF/system.prop"
 PROP1="ro.crypto.state=encrypted"
 PROP2="ro.build.tags=release-keys"
 PROP3="ro.build.type=user"
-PIF="/data/adb/modules/playintegrityfix"
 LOG="$LOG_DIR/service.log"
 LOG2="$LOG_DIR/encrypt.log"
-LOG3="$LOG_DIR/autopif.log"
+#LOG3="$LOG_DIR/autopif.log"
 LOG4="$LOG_DIR/twrp.log"
 LOG5="$LOG_DIR/tag.log"
 LOG6="$LOG_DIR/build.log"
@@ -70,13 +70,16 @@ resetprop_if_match "ro.boot.bootmode" "recovery" "unknown"
 resetprop_if_match "vendor.boot.bootmode" "recovery" "unknown"
 
 # USB/ADB
-resetprop_if_diff "sys.usb.adb.disabled" "1"
-resetprop_if_diff "service.adb.root" "0"
-resetprop_if_diff "persist.sys.developer_options" "0"
-resetprop_if_diff "persist.sys.dev_mode" "0"
-resetprop_if_diff "persist.sys.debuggable" "0"
-resetprop_if_diff "ro.oem_unlock_supported" "0"
-resetprop_if_diff "ro.hardware.virtual_device" "0"
+# Reset system properties if mismatch
+#[ -n "$(resetprop sys.usb.adb.disabled)" ] && [ "$(resetprop sys.usb.adb.disabled)" != "1" ] && resetprop sys.usb.adb.disabled 1
+#[ -n "$(resetprop service.adb.root)" ] && [ "$(resetprop service.adb.root)" != "0" ] && resetprop service.adb.root 0
+
+# Other props use normal function
+resetprop_if_diff persist.sys.developer_options 0
+resetprop_if_diff persist.sys.dev_mode 0
+resetprop_if_diff persist.sys.debuggable 0
+resetprop_if_diff ro.oem_unlock_supported 0
+resetprop_if_diff ro.hardware.virtual_device 0
 
 # SELinux
 resetprop_if_diff "ro.boot.selinux" "enforcing"
@@ -105,7 +108,7 @@ sleep 120
     fi
   else
     if grep -qxF "$PROP1" "$PROP"; then
-      sed -i "\|^$LINE\$|d" "$PROP"
+      sed -i "\|^${PROP1}\$|d" "$PROP"
       echo "Removed line: $PROP1"
     else
       echo "Prop not present, no action needed"
@@ -128,7 +131,7 @@ sleep 120
     fi
   else
     if grep -qxF "$PROP2" "$PROP"; then
-      sed -i "\|^$PROP2\$|d" "$PROP"
+      sed -i "\|^${PROP2}\$|d" "$PROP"
       echo "Removed line: $PROP2"
     else
       echo "Prop not present, no action needed"
@@ -151,7 +154,7 @@ sleep 120
     fi
   else
     if grep -qxF "$PROP3" "$PROP"; then
-      sed -i "\|^$PROP3\$|d" "$PROP"
+      sed -i "\|^${PROP3}\$|d" "$PROP"
       echo "Removed line: $PROP3"
     else
       echo "Prop not present, no action needed"
