@@ -316,12 +316,14 @@ set_resetprop() {
 }
 
 set_simpleprop() {
-    PROP="$1"
-    VALUE="$2"
+    local PROP="$1"
+    local VALUE="$2"
+    local CURRENT
+
     CURRENT=$(su -c getprop "$PROP")
-    
+
     if [ -n "$CURRENT" ]; then
-        su -c setprop "$PROP" "$VALUE" > /dev/null 2>&1
+        su -c setprop "$PROP" "$VALUE" >/dev/null 2>&1
         chup "Set $PROP to $VALUE"
     else
         chup "Skipping $PROP, property does not exist"
@@ -783,4 +785,21 @@ resetprop_hexpatch() {
     local NEWHEX="$(printf '%02x' "$NEWLEN")$(printf "$NEWVALUE" | od -A n -t x1 -v | tr -d ' \n')$(printf "%$((92-NEWLEN))s" | sed 's/ /00/g')"
     echo -ne "\x00\x00" | dd obs=1 count=2 seek=$((NAMEOFFSET-96)) conv=notrunc of="$PROPFILE" 2>/dev/null
     echo -ne "$(printf "$NEWHEX" | sed -e 's/.\{2\}/&\\x/g' -e 's/^/\\x/' -e 's/\\x$//')" | dd obs=1 count=93 seek=$((NAMEOFFSET-93)) conv=notrunc of="$PROPFILE" 2>/dev/null
+}
+
+boot_log() {
+    echo "$1" | tee -a "$RECORD/boot.log"
+}
+
+wait_for_boot() {
+    boot_log "Waiting for Android to finish booting..."
+    local count=0
+    while [ "$(getprop sys.boot_completed)" != "1" ]; do
+        sleep 1
+        count=$((count + 1))
+        [ "$count" -ge 300 ] && { boot_log "Boot wait timeout"; return 1; }
+    done
+    sleep 3
+    boot_log "Initialising, please wait."
+    boot_log " "
 }
