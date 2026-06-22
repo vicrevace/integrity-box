@@ -513,18 +513,121 @@ function showLoader(show,text){
   }
 }
 
+let RESET_PROP_INFO = null;
+
+function detectResetprop(){
+  if(RESET_PROP_INFO !== null) return RESET_PROP_INFO;
+  
+  // Try "which resetprop" first
+  let rpPath = "";
+  try{
+    rpPath = String(ksu.exec("which resetprop 2>/dev/null || echo ''")).trim();
+  }catch(e){}
+  
+  // Fallback to known paths
+  if(!rpPath){
+    const paths = [
+      "/data/adb/ksu/bin/resetprop",
+      "/data/adb/ap/bin/resetprop",
+      "/data/adb/magisk/resetprop",
+      "/data/adb/magisk/busybox resetprop",
+      "/sbin/resetprop",
+      "/system/xbin/resetprop",
+      "/system/bin/resetprop"
+    ];
+    for(const p of paths){
+      try{
+        const r = ksu.exec("test -f '" + p.split(" ")[0] + "' && echo FOUND || echo NOT_FOUND");
+        if(String(r).trim() === "FOUND"){
+          rpPath = p;
+          break;
+        }
+      }catch(e){}
+    }
+  }
+  
+  if(!rpPath){
+    RESET_PROP_INFO = {path: "resetprop", dir: "", isCompact: false};
+    return RESET_PROP_INFO;
+  }
+  
+  // Detect if compact resetprop
+  let isCompact = false;
+  try{
+    const help = String(ksu.exec(rpPath + " --help 2>&1 || echo ''")).trim();
+    if(help && !help.includes("-p") && !help.includes("--persist")){
+      isCompact = true;
+    }
+  }catch(e){}
+  
+  const dir = rpPath.includes("/") ? rpPath.substring(0, rpPath.lastIndexOf("/")) : "";
+  RESET_PROP_INFO = {path: rpPath, dir: dir, isCompact: isCompact};
+  return RESET_PROP_INFO;
+}
+
+function getResetpropCmd(){
+  const info = detectResetprop();
+  return info.path;
+}
+
+function getResetpropSetCmd(key, value, persistent){
+  const info = detectResetprop();
+  const rp = info.path;
+  
+  if(info.isCompact){
+    if(persistent){
+      return rp + " -n " + key + " " + value;
+    }
+    return rp + " " + key + " " + value;
+  }
+  
+  if(persistent){
+    return rp + " -p " + key + " " + value;
+  }
+  return rp + " " + key + " " + value;
+}
+
+function getResetpropDeleteCmd(key, persistent){
+  const info = detectResetprop();
+  const rp = info.path;
+  
+  if(info.isCompact){
+    return rp + " -d " + key;
+  }
+  
+  if(persistent){
+    return rp + " -p -d " + key;
+  }
+  return rp + " -d " + key;
+}
+
 function sh(cmd){
-  try{return ksu.exec(cmd)}catch{return""}
+  try{
+    const info = detectResetprop();
+    let prefix = "";
+    if(info.dir && info.dir !== ""){
+      prefix = "export PATH=" + info.dir + ":$PATH; ";
+    }
+    return ksu.exec(prefix + cmd);
+  }catch{return""}
 }
 
 function run(cmd,cb){
   const k=window.parent?.ksu||window.ksu;
   if(!k||!k.exec){popup("KSU not available","error");if(cb)cb("");return}
+  
+  const info = detectResetprop();
+  let prefix = "";
+  if(info.dir && info.dir !== ""){
+    prefix = "export PATH=" + info.dir + ":$PATH; ";
+  }
+  const fullCmd = prefix + cmd;
+  
   const id="c"+Date.now();
   let d=false;
   const t=setTimeout(()=>{if(d)return;d=true;delete(window.parent||window)[id];if(cb)cb("")},15000);
   (window.parent||window)[id]=function(){if(d)return;d=true;clearTimeout(t);delete(window.parent||window)[id];const r=arguments.length===1?arguments[0]:arguments[1]||"";if(cb)cb(r)};
-  k.exec("sh -c '"+cmd.replace(/'/g,"'\''")+"'","{}",id);
+  k.exec("sh -c '"+fullCmd.replace(/'/g,"'\\''")+"'","{}",id);
 }
 
 function log(msg,type){
@@ -666,9 +769,10 @@ function toggleBankingMode(){
 }
 
 function autoRemoveDex2oatFlags(cb){
-  const check=sh("getprop | grep -q '^\[dalvik.vm.dex2oat-flags\]' && echo EXISTS || echo NOT_FOUND");
+  const check=sh("getprop | grep -q '^\\[dalvik.vm.dex2oat-flags\\]' && echo EXISTS || echo NOT_FOUND");
   if(String(check).trim()==="NOT_FOUND"){if(cb)cb();return}
-  sh("resetprop -p dalvik.vm.dex2oat-flags");
+  const cmd = getResetpropDeleteCmd("dalvik.vm.dex2oat-flags", true);
+  sh(cmd);
   log("Auto-removed Dex2OAT flags","ok");
   if(cb)cb();
 }
@@ -676,14 +780,15 @@ function autoRemoveDex2oatFlags(cb){
 function removeDex2oatFlags(){
   showLoader(true,"Checking Dex2OAT property...");
   log("Checking Dex2OAT property...");
-  const check=sh("getprop | grep -q '^\[dalvik.vm.dex2oat-flags\]' && echo EXISTS || echo NOT_FOUND");
+  const check=sh("getprop | grep -q '^\\[dalvik.vm.dex2oat-flags\\]' && echo EXISTS || echo NOT_FOUND");
   if(String(check).trim()==="NOT_FOUND"){
     showLoader(false);
     log("Property already clean","ok");
     popup("Cleaned","success");
     return;
   }
-  sh("resetprop -p dalvik.vm.dex2oat-flags");
+  const cmd = getResetpropDeleteCmd("dalvik.vm.dex2oat-flags", true);
+  sh(cmd);
   showLoader(false);
   log("Dex2OAT property removed","ok");
   popup("Dex2OAT removed","success");
