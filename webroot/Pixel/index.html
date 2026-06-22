@@ -464,6 +464,7 @@ color: rgba(232, 234, 246, 0.5);
 <script>
 const TARGET_FILE="/data/adb/modules/playintegrityfix/apps.txt";
 const PROP_FILE="/data/adb/modules/playintegrityfix/pixel.txt";
+const FLAG_FILE="/data/adb/Box-Brain/per-app-spoofing";
 const ZYGISK_PATH="/data/adb/modules/playintegrityfix/zygisk";
 
 function runShell(cmd, cb){
@@ -629,6 +630,11 @@ async function toggleSpoofApps(){
 if(!zygiskExists) return;
 const newVal = spoofAppsEnabled ? "0" : "1";
 await writeKey(PROP_FILE, "spoofApps", newVal);
+if(newVal === "1"){
+  runShell(`mkdir -p $(dirname /data/adb/Box-Brain/per-app-spoofing) && touch /data/adb/Box-Brain/per-app-spoofing`, ()=>{});
+} else {
+  runShell(`rm -f /data/adb/Box-Brain/per-app-spoofing`, ()=>{});
+}
 spoofAppsEnabled = !spoofAppsEnabled;
 updateSpoofAppsVisuals();
 popup(spoofAppsEnabled ? "Spoof Apps enabled" : "Spoof Apps disabled");
@@ -655,7 +661,14 @@ if(!zygiskExists){
 }
 
 const val = await readKey(PROP_FILE, "spoofApps");
-spoofAppsEnabled = val === "1";
+const flagExists = await new Promise(resolve=>{
+  runShell(`if [ -f /data/adb/Box-Brain/per-app-spoofing ]; then echo exists; else echo missing; fi`,(c,o)=>resolve((o||"").trim()==="exists"));
+});
+spoofAppsEnabled = val === "1" || flagExists;
+
+if(spoofAppsEnabled && val !== "1") await writeKey(PROP_FILE, "spoofApps", "1");
+if(!spoofAppsEnabled && flagExists) runShell(`rm -f /data/adb/Box-Brain/per-app-spoofing`, ()=>{});
+
 updateSpoofAppsVisuals();
 
 runShell(`mkdir -p $(dirname ${esc(TARGET_FILE)}) && touch ${esc(TARGET_FILE)}`, ()=>buildList());
