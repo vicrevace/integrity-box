@@ -27,7 +27,8 @@ FLAG="$BOX/advanced"
 PATCH_FLAG="$BOX/patch"
 
 P="$MODPATH/pixel.txt"
-SKIP_FILE="/data/adb/Box-Brain/skip"
+SKIP_FILE="$BOX/skip"
+SPOOF_APPS="$BOX/per-app-spoofing"
 
 PATCH_DATE="2026-06-01"
 PROP_MAIN="ro.build.version.security_patch"
@@ -38,28 +39,30 @@ FILE_PATH="$TARGET_DIR/security_patch.txt"
 DIR="/sdcard/Download"
 OUTJSON="/sdcard/meow.json"
 
-URL_ZN="https://github.com/Dr-TSNG/ZygiskNext/releases/download/v1.3.4/Zygisk-Next-1.3.4-746-d1b76b3-release.zip"
-SUM_ZN="b330b368e6133b83c069c0ff1bb1bf81091afec5a8d6532d39c14bd1b7e5d367"
-URL_CP="https://github.com/LSPosed/CorePatch/releases/download/4.8/app-release.apk"
-SUM_CP="61db1976f9e47f28700825942cfed0a373cbed9ac0d4006faefd21de34e19fef"
-URL_TH="https://github.com/trinadhthatakula/Thor/releases/download/v1.71.7/foss-release.apk"
-SUM_TH="bb6645e4a434d40eb8e8d54d41a0813f241ea091fc360e6d49835759e9c8c6b8"
+URL_ZN="https://github.com/Dr-TSNG/ZygiskNext/releases/download/v1.4.0/Zygisk-Next-1.4.0-768-37ee2d5-release.zip"
+SUM_ZN="97791423c705726478b95c2fb625af29f3899baff1a61e322f0977f0cb1141b1"
+URL_CP="https://github.com/LSPosed/CorePatch/releases/download/4.9/app-release.apk"
+SUM_CP="1bdc47d5b48afffd37948a9f5638ae6a5f3d4d02ca01ae36143588284b979996"
+URL_TH="https://github.com/trinadhthatakula/Thor/releases/download/v1.81.8/foss-release.apk"
+SUM_TH="6e834ee57539e802fba708184db1db88e6a55ec781321fad9bb627ec31d7de1c"
 URL_AF="https://github.com/Android1500/AndroidFaker/releases/download/v2.0.0-beta-9-5/AF-v2.0.0-beta-9-5.apk"
 SUM_AF="ec46d481c8f455f36204ffb113dd2623c464dab58d1d2e64e4e42d24fa69d7c8"
 URL_TS="https://github.com/5ec1cff/TrickyStore/releases/download/1.4.1/Tricky-Store-v1.4.1-245-72b2e84-release.zip"
 SUM_TS="2f5e73fcba0e4e43b6e96b38f333cbe394873e3a81cf8fe1b831c2fbd6c46ea9"
 URL_KA="https://github.com/qwq233/KeyAttestation/releases/download/1.8.4/key-attestation-v1.8.4-release.apk"
 SUM_KA="c9bbc118c75b11bfca7d99b67470d68b5505e1959b6a5f0b298b38ba8104c93a"
-URL_UL="https://github.com/Xposed-Modules-Repo/ru.mike.updatelocker/releases/download/19-1.4.2/updatelocker_v1.4.2_icon.apk"
-SUM_UL="7e157f7847e4ac1e7a2262f9865740f405c3a6346108d08dec835f3e7cae12ee"
+URL_UL="https://github.com/Xposed-Modules-Repo/ru.mike.updatelocker/releases/download/20-1.4.3/updatelocker_v1.4.3_icon.apk"
+SUM_UL="a5ad1d5263e5f55500423f629b314c6003e8108df3f6d487db7581474b44d097"
 URL_HMA="https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/hidemyapplist/config.json"
-SUM_HMA="bf7e449d96fcd2467c2568ba184f67ee53211f3e5437afdb91116cf24adb4c71"
+SUM_HMA="857f3772a1b828b916933b45c3496808d9111b7b79bf14153811f9f8c34aceb4"
 URL_HMA2="https://github.com/frknkrc44/HMA-OSS/releases/download/oss-161/HMA-OSS-oss-161-release.apk"
 SUM_HMA2="059f9fa4a2ccdef83f281d9434c852d29a0728d5e0e4e0f1e13d96fade6947cd"
 URL_RP="https://github.com/uragiristereo/Reverse_Pixelify/releases/download/v1.0/Reverse_Pixelify_v1.0.apk"
 SUM_RP="d7c69f958bfdec13f8d3ded5cf34705cf3743645aad713813f463aefab9d971a"
-URL_KW="https://github.com/5ec1cff/KsuWebUIStandalone/releases/download/v1.0/KsuWebUI-1.0-34-release.apk"
-SUM_KW="a99e9a66c79d94db7cc5cf0c12607df1790215423e3d917c937dc16093c8135d"
+URL_KW="https://github.com/MeowDump/KsuWebUIStandalone/releases/download/v1/Meow-KsuWebUI-release.apk"
+SUM_KW="5b1d585903566c8f07adb1ecc1c16e1045476687b51df81ff78615b6d4d726d4"
+URL_MA="https://github.com/MeowDump/MeowAssistant/releases/download/v1/v1-MeowTile.apk"
+SUM_MA="b2aa89e09d1177ecdfbffe9d0925fd491135228df450e65f5d599a1836fc764a"
 PIPE="$RECORD/integrity_downloader.pipe"
 OUT="/storage/emulated/0/Download/IntegrityModules"
 WIDTH=55
@@ -126,9 +129,9 @@ if [ -f $BOX/download ]; then
         print_row "Reverse Pixelify" "$(get_size "$OUT/Disable_ROM_spoofing_lsposed.apk")" "Verified" ||
         print_row "Reverse Pixelify" "-" "Failed"
         
-    download "$URL_KW" "KSU_WebUI.apk" "$SUM_KW"
-    [ -f "$OUT/KSU_WebUI.apk" ] &&
-        print_row "KSU WebUI" "$(get_size "$OUT/KSU_WebUI.apk")" "Verified" ||
+    download "$URL_KW" "WebUI.apk" "$SUM_KW"
+    [ -f "$OUT/WebUI.apk" ] &&
+        print_row "KSU WebUI" "$(get_size "$OUT/WebUI.apk")" "Verified" ||
         print_row "KSU WebUI" "-" "Failed"
         
     download "$URL_CP" "Downgrade_Playstore.apk" "$SUM_CP"
@@ -140,6 +143,11 @@ if [ -f $BOX/download ]; then
     [ -f "$OUT/Installation_Spoofer.apk" ] &&
         print_row "Thor Installer" "$(get_size "$OUT/Installation_Spoofer.apk")" "Verified" ||
         print_row "Thor Installer" "-" "Failed"
+        
+    download "$URL_MA" "Meow_QS_Tile.apk" "$SUM_MA"
+    [ -f "$OUT/Meow_QS_Tile.apk" ] &&
+        print_row "Meow QS Tile" "$(get_size "$OUT/Meow_QS_Tile.apk")" "Verified" ||
+        print_row "Meow QS Tile" "-" "Failed"
         
 #    download "$URL_AF" "Android_Faker.apk" "$SUM_AF"
 #    [ -f "$OUT/Android_Faker.apk" ] &&
@@ -328,8 +336,8 @@ done
 
 # Keybox Handling
 for f in keybox keybox2; do
-    FLAG="/data/adb/Box-Brain/$f"
-    SRC="/data/adb/tricky_store/$f.xml"
+    FLAG="$BOX/$f"
+    SRC="$TARGET_DIR/$f.xml"
 
     [ "$f" = "keybox2" ] && DEST="/sdcard/aosp.xml" || DEST="/sdcard/$f.xml"
 
@@ -521,6 +529,15 @@ done
 log_step "RESTART" "Google Service Processes"
 
 sh "$SCRIPT_DIR/cleanup.sh" >/dev/null 2>&1; 
+
+# Restore per-App-Spoofing value
+if [ -f "$P" ]; then
+    if [ -f "$SPOOF_APPS" ]; then
+        sed -i 's/^spoofApps=.*/spoofApps=1/' "$P"
+    else
+        sed -i 's/^spoofApps=.*/spoofApps=0/' "$P"
+    fi
+fi
 
 # TSA Farewell || Disable auto target update of outdated module 
 if [ -f "/data/adb/modules/tsupport-advance/service.sh" ]; then
