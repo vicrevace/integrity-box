@@ -6,9 +6,8 @@ LOG_DIR="/data/adb/Box-Brain/Integrity-Box-Logs"
 INSTALL_LOG="$LOG_DIR/Installation.log"
 SCRIPT="$MODPATH/webroot/common_scripts"
 MEOW="/data/adb/modules/playintegrityfix"
-SRC="/data/adb/modules_update/playintegrityfix/module.prop"
+SRC="/data/adb/modules_update/playintegrityfix"
 SDK=$(getprop ro.system.build.version.sdk)
-DEST="$MEOW/module.prop"
 FLAG="/data/adb/Box-Brain"
 TRICKY="/data/adb/tricky_store"
 TIMEOUT=15
@@ -17,6 +16,9 @@ TIMEOUT=15
 mkdir -p "$LOG_DIR" || true
 mkdir -p "$MEOW"
 mkdir -p "$TRICKY"
+
+# Support Hot Installation
+export MODULE_HOT_INSTALL_REQUEST="true"
 
 # Logger
 debug() {
@@ -107,21 +109,22 @@ hizru() {
 
 detect_rom() {
     if rom_type; then
-        debug " ✦ ROM type: CUSTOM ROM"
+        debug " ✦ ROM type: Custom ROM"
     else
-        touch "$FLAG/safemode"
+        debug " ✦ ROM type: Stock / Spoofed"
+        if [ ! -f "$MEOW/service.sh" ]; then
+            touch "$FLAG/safemode"
+        fi
     fi
 }
 
 set_integritybox_profile() {
     debug " ✦ Setting IntegrityBox Profile"
-#    if [ ! -f "/data/adb/modules/playintegrityfix/service.sh" ]; then
         if [ "$SDK" -ge 33 ]; then
             touch "$FLAG/pixelify"
         else
             touch "$FLAG/legacy"
         fi
-#    fi
 }
 
 # Clean up old logs and files
@@ -130,46 +133,18 @@ cleanup() {
     sh "$SCRIPT/cleanup.sh"
 }
 
-# Clean up old logs and files
-butter_chicken() {
-    chmod +x "$MODPATH/consent.sh"
-    sh "$MODPATH/consent.sh"
-}
-
-setup_keybox() {
-  local BASE="$1"
-  [ -z "$BASE" ] && return 0
-
-  local SRC="$BASE/keybox"
-  local DST="$TRICKY"
-
-  # Ensure destination directory exists
-  [ -d "$DST" ] || {
-    mkdir -p "$DST" || return 1
-    chmod 700 "$DST"
-  }
-
-  for f in keybox2.xml keybox3.xml; do
-    [ -f "$DST/$f" ] && continue
-    [ -f "$SRC/$f" ] || continue
-    cp "$SRC/$f" "$DST/$f" || continue
-    chmod 600 "$DST/$f"
-    chown root:root "$DST/$f" 2>/dev/null
-  done
-}
-
 # Create necessary directories if missing
 prepare_directories() {
     debug " ✦ Preparing Required Directories  "
     [ ! -d "/data/adb/modules/playintegrityfix" ] && mkdir -p "/data/adb/modules/playintegrityfix"
-    [ ! -f "$SRC" ] && return 1
+    [ ! -f "$SRC/module.prop" ] && return 1
 }
 
 # Handle module prop file
 handle_module_props() {
     debug " ✦ Handling Module Properties "
     touch "$MEOW/update"
-    cp "$SRC" "$DEST"
+    cp "$SRC/module.prop" "$MEOW/module.prop"
 }
 
 # Verify boot hash file
@@ -193,6 +168,8 @@ enable_recommended_settings() {
     touch "$FLAG/migrate_force"
     touch "$FLAG/run_migrate"
     touch "$FLAG/noredirect"
+    touch "$FLAG/ignore"
+    touch "$FLAG/rukja"
 }
 
 # Final footer message
@@ -216,9 +193,7 @@ install_module() {
     hizru
     cleanup
     check_boot_hash
-#    setup_keybox "$MODPATH"
     enable_recommended_settings
-#    butter_chicken
     detect_rom
     release_source
 }
@@ -236,10 +211,14 @@ echo "
 "
 
 # Set fingerprint on installation 
-if [ -f "/data/adb/modules/playintegrityfix/pixel.txt" ]; then
-    cp "/data/adb/modules/playintegrityfix/pixel.txt" "$MODPATH/pixel.txt"
-elif [ ! -f "/data/adb/modules/playintegrityfix/service.sh" ]; then
-    cp "$MODPATH/fingerprint/pixel.txt" "$MODPATH/pixel.txt"
+if [ -f "$MEOW/custom.pif.prop" ]; then
+    cp "$MEOW/custom.pif.prop" "$MODPATH/custom.pif.prop"
+elif [ ! -f "$MEOW/service.sh" ]; then
+    if [ "$SDK" -le 31 ]; then
+        cp "$MODPATH/toolkit/legacy.prop" "$MODPATH/custom.pif.prop"
+    else
+        cp "$MODPATH/toolkit/pixelify.prop" "$MODPATH/custom.pif.prop"
+    fi
 fi
 
 # Quote of the day 
@@ -261,15 +240,6 @@ fi
 
 # Start the installation process
 install_module
-
-#[ ! -f "$FLAG/consent" ] && butter_chicken
-
-# Move config to $MODPATH to avoid detection in future 
-if [ -f "/sdcard/config.md" ]; then
-    cp -f "/sdcard/config.md" "$MODPATH/config.md" && rm -f "/sdcard/config.md"
-elif [ -f "/storage/emulated/0/config.md" ]; then
-    cp -f "/storage/emulated/0/config.md" "$MODPATH/config.md" && rm -f "/storage/emulated/0/config.md"
-fi
 
 # Create scripts 
 boot="/data/adb/service.d"
@@ -699,6 +669,7 @@ exit 0
 EOF
 fi
 
+# A message for y'all 
 sed -i 's/^description=.*/description=> Passing integrity checks means nothing if you’re missing life./' "$MEOW/module.prop"
 
 ##########################################
