@@ -230,26 +230,3 @@ if [ -f "$BOX/nuke-los-boot" ]; then
 else
    log "nuke-los-boot flag not found, skipping force_override.sh"
 fi
-
-# Stop daemon if needed 
-if [ -f "$BOX/rukja" ]; then
-    exit 0
-fi
-
-# Daemon watchdog
-if [ -f "$BOX/autopilot" ]; then
-    (
-        while true; do
-            last=$(cat $BOX/daemon_heartbeat 2>/dev/null || echo "0")
-            now=$(date +%s)
-            
-            if [ $((now - last)) -gt 180 ]; then
-                rm -rf $BOX/autorun.lockdir $BOX/.executing 2>/dev/null
-                sh "$SCRIPT/autopilot.sh" >/dev/null 2>&1 &
-            fi
-            
-            sleep 60
-        done
-    ) &
-fi
-
