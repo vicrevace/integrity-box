@@ -803,3 +803,17 @@ wait_for_boot() {
     boot_log "Initialising, please wait."
     boot_log " "
 }
+
+reset_tricky_store() {
+    # Tricky Store
+    if [ -d "/data/adb/tricky_store/key_db" ]; then
+        rm -rf "/data/adb/tricky_store/key_db"
+        mkdir -p "/data/adb/tricky_store/key_db"
+    fi
+
+    # TEE Simulator 
+    if [ -d "/data/adb/tricky_store/persistent_keys" ]; then
+        rm -rf "/data/adb/tricky_store/persistent_keys"
+        mkdir -p "/data/adb/tricky_store/persistent_keys"
+    fi
+}
