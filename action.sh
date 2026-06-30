@@ -26,7 +26,7 @@ INSTALLATION="/data/adb/modules_update/playintegrityfix/webroot/common_scripts/k
 FLAG="$BOX/advanced"
 PATCH_FLAG="$BOX/patch"
 
-P="$MODPATH/pixel.txt"
+P="$MODPATH/custom.pif.prop"
 SKIP_FILE="$BOX/skip"
 SPOOF_APPS="$BOX/per-app-spoofing"
 
@@ -39,8 +39,8 @@ FILE_PATH="$TARGET_DIR/security_patch.txt"
 DIR="/sdcard/Download"
 OUTJSON="/sdcard/meow.json"
 
-URL_ZN="https://github.com/Dr-TSNG/ZygiskNext/releases/download/v1.4.0/Zygisk-Next-1.4.0-768-37ee2d5-release.zip"
-SUM_ZN="97791423c705726478b95c2fb625af29f3899baff1a61e322f0977f0cb1141b1"
+URL_ZN="https://github.com/Dr-TSNG/ZygiskNext/releases/download/v1.4.2/Zygisk-Next-1.4.2-789-119aaa0-release.zip"
+SUM_ZN="efbae60ee2f8b6cf9c1e3726d66252a0ae0eb199cb8216ce139ae318c0d38261"
 URL_CP="https://github.com/LSPosed/CorePatch/releases/download/4.9/app-release.apk"
 SUM_CP="1bdc47d5b48afffd37948a9f5638ae6a5f3d4d02ca01ae36143588284b979996"
 URL_TH="https://github.com/trinadhthatakula/Thor/releases/download/v1.81.8/foss-release.apk"
@@ -301,6 +301,7 @@ log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >>"$CPP"; }
 
 # Show header
 print_header
+reset_tricky_store
 
 sh "$UPDATE" || { sleep 10; exit 1; }
 echo " "
@@ -455,7 +456,7 @@ teeBroken="false"
 TEE_STATUS="$TARGET_DIR/tee_status"
 [ -f "$TEE_STATUS" ] && [ "$(grep -E '^teeBroken=' "$TEE_STATUS" | cut -d '=' -f2)" = "true" ] && teeBroken="true"
 
-for pkg in com.android.vending com.google.android.gms com.google.android.gsf; do
+for pkg in com.android.vending com.google.android.gms com.google.android.gsf io.github.qwq233.keyattestation com.google.android.apps.walletnfcrel com.google.android.apps.messaging; do
     echo "$pkg" >> "$TMP"
 done
 
