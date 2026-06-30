@@ -4,77 +4,46 @@
 
 # What's New?
 
-- zygisk: fully compatible with Android 17 Custom / Pixel ROMs (tested on LunimDroid A17 & Pixel stock A17 with zygisk next)
+### Core Changes
+- Switched configuration to prop format for better compatibility
+- Synchronized with latest PIFork codebase
+- Dropped per-app spoofing support 
+- Brought back pixelify spoofing 
+- Fixed battery drain issues caused by background processes
+- Fixed RCS messaging issues on certain carriers
+- Introduced **Repair Mode** click this when Play Integrity is failing or fails after some time or key attestation shows "bootloader unlocked" even with a valid keybox
+- Added automatic cleanup of previous key database before Keybox updates
+- Added GWallet and key attestation packages to default target scope
+- Updated ZN hash/link reference to latest
 
-- zygisk: reworked on spoofing machenism
+### Removed Features
+- Dropped Beast Mode
+- Dropped Beast Mode WebUI
+- Dropped Integrity Status WebUI
+- Dropped per-app Device Spoofing WebUI
+- Dropped Auto Pilot
+- Dropped Auto Pilot backend
+- Dropped Custom Fingerprint WebUI
+- Dropped Flagged App Scanner UI
+- Dropped Keybox Update WebUI
+- Dropped Patch Spoofing WebUI
+- Dropped Spoofed, Vending & Autopilot indicators from dashboard
+- Dropped Daemon backend
+- Dropped Local Fingerprints backend
+- Dropped Integrity Box backup configuration
+- Dropped unnecessary/redundant code throughout
 
-- zygisk: improved per-app spoofing 
+### Dashboard Updates
+- Added Play Integrity status directly to dashboard
+- Removed legacy indicator icons (spoofed, vending, autopilot)
 
-- module settings: added option to auto hide custom props 
+### Bug Fixes
+- Fixed some apps crashing on some ROMs
+- Fixed safe mode getting re-enabled on stock/spoofed ROM after module update even when user manually disabled it
+- Fixed Keybox status not updating correctly in module description
+- Fixed installation flow to use ASK checks when setting fingerprint
 
-- module settings: added option to auto hide play integrity fix props detection 
-
-- module settings: added option to auto delete lineageos props 
-
-- module settings: added option to auto hide sus files 
-
-- module settings: brought back selinux spoofer
-
-- module settings: added option to auto hide custom props 
-
-- module settings: added an option allowing other modules to inject additional system app entries into target.txt. This isn’t something I recommend or support, adding system apps to the target list generally doesn’t serve a meaningful purpose. It just increase your battery drain & impact device performance. That said, a few users requested it, so it’s included for flexibility 😭🥀
-
-- module settings: added user manual instructions for newbies 
-
-- Beast Mode: cleaned up internals
-
-- Beast Mode: added resetprop compact support
-
-- lineage spoof: backend compatibility fix
-
-- lineage force-hide: backend compatibility fix
-
-- PIF: prop detection fix
-
-- boot: more properties added
-
-- per-app spoof: disabled by default
-
-- per-app spoof: switched from hardcoded values to file-existence check on action
-
-- per-app spoof: fixed auto-enable on action click (battery drain)
-
-- per-app spoof: config preserved on install
-
-- integrity downloader: updated ZN link/hash
-
-- integrity downloader: updated WebUI link/hash
-
-- integrity downloader: updated UpdateLocker link/hash
-
-- integrity downloader: updated Thor link/hash
-
-- integrity downloader: updated Core Patch link/hash
-
-- integrity downloader: added QS Assistant
-
-- integrity downloader: replaced WebUI with my fork
-
-- keybox: dropped AOSP
-
-- keybox: dropped secondary
-
-- keybox: dropped territory
-
-- install: dropped volume key checks
-
-- install: dropped consent.sh
-
-- install: fixed profile not getting set on fresh installation 
-
-- watchdog: killed unnecessary loop
-
-- post-fs-data.sh: moved script creations on installation 
-
-
-## Thanks for reading ;)
+### Backend & Cleanup
+- Cleaned up unused code and removed redundant logic
+- General performance improvements and stability fixes
+- Probably more that didn't make it into this list (i don't remember)
