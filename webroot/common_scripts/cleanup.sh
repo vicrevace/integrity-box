@@ -57,16 +57,21 @@ mv "$T" "$F"
     log "Deleting known leftover files from my modules..."
     delete_if_exist /data/adb/integrity_box_verify
 	delete_if_exist /data/adb/modules_update/playintegrityfix/verify.sh
-	delete_if_exist /data/adb/Integrity-Box-Logs
+	delete_if_exist /data/adb/service.d/shamiko.sh # we don't need this anymore 
 	delete_if_exist /data/adb/modules_update/playintegrityfix/hash
 	delete_if_exist /data/adb/modules_update/playintegrityfix/credits.md
-	delete_if_exist /data/adb/service.d/debug.sh
-	delete_if_exist /data/adb/Box-Brain/Integrity-Box-Logs/description.sh
-	delete_if_exist /data/adb/modules/playintegrityfix/tmp.pro
+	delete_if_exist /data/adb/modules_update/playintegrityfix/acknowledgement.md
+	delete_if_exist /data/adb/modules_update/playintegrityfix/README.md
+	delete_if_exist /data/adb/modules_update/playintegrityfix/CHANGELOG.md
+	delete_if_exist /data/adb/modules/playintegrityfix/tmp.prop
 	delete_if_exist /data/adb/modules/playintegrityfix/custom.pif.json
 	delete_if_exist /data/adb/modules/playintegrityfix/custom.pif.json.bak
-	delete_if_exist /data/adb/modules/playintegrityfix/autopif4
+	delete_if_exist /data/adb/modules/playintegrityfix/pixel.txt.bak
+	delete_if_exist /data/adb/modules/playintegrityfix/pixel.txt
 	delete_if_exist /data/adb/modules/playintegrityfix/pif.prop
+	delete_if_exist /data/adb/modules/playintegrityfix/pif.json
+	delete_if_exist /data/adb/modules/playintegrityfix/toolkit/legacy.prop
+	delete_if_exist /data/adb/modules/playintegrityfix/toolkit/pixelify.prop
 	delete_if_exist /data/adb/modules/playintegrityfix/PIXEL_LATEST_HTML
 	delete_if_exist /data/adb/modules/playintegrityfix/PIXEL_OTA_HTML
 	delete_if_exist /data/adb/modules/playintegrityfix/PIXEL_VERSIONS_HTML
@@ -76,7 +81,8 @@ mv "$T" "$F"
 	delete_if_exist /data/adb/pif.json
 	delete_if_exist /data/local/tmp/keybox_scan.log
 	delete_if_exist /data/local/tmp/keybox_runner.log
-	delete_if_exist /data/adb/modules/playintegrity # remove old module id to avoid conflict
+	delete_if_exist /data/adb/modules/playintegrityfix/consent.sh
+	delete_if_exist /data/adb/modules/playintegrityfix/config.md
     echo "••••••• Cleanup Ended •••••••"
     echo " "
 } >> "$L" 2>&1
